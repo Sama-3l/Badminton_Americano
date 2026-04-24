@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Americano</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Unbounded:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0d0d;
+    --surface: #161616;
+    --surface2: #1f1f1f;
+    --border: #2a2a2a;
+    --border2: #363636;
+    --accent: #c8f135;
+    --accent2: #a3c920;
+    --text: #f0f0f0;
+    --muted: #666;
+    --muted2: #888;
+    --danger: #ff5c5c;
+    --win: #c8f135;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 14px; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* Header */
+  .header {
+    width: 100%; max-width: 560px;
+    padding: 2rem 1.25rem 0;
+  }
+  .logo {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    color: var(--accent);
+  }
+  .logo span { color: var(--muted2); font-weight: 400; }
+  .tagline {
+    font-size: 0.72rem;
+    color: var(--muted);
+    margin-top: 2px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* Main */
+  .main {
+    width: 100%; max-width: 560px;
+    padding: 1.5rem 1.25rem 4rem;
+    flex: 1;
+  }
+
+  /* Input area */
+  .input-section { margin-bottom: 1.5rem; }
+  .input-row {
+    display: flex; gap: 8px; margin-bottom: 10px;
+  }
+  input[type=text] {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.875rem;
+    padding: 10px 14px;
+    border-radius: 6px;
+    outline: none;
+    transition: border-color .15s;
+  }
+  input[type=text]:focus { border-color: var(--border2); }
+  input[type=text]::placeholder { color: var(--muted); }
+
+  .btn {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.8rem;
+    font-weight: 500;
+    padding: 10px 16px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: opacity .12s, transform .1s;
+    white-space: nowrap;
+    letter-spacing: 0.02em;
+  }
+  .btn:active { transform: scale(.97); opacity: .85; }
+  .btn-add {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border2);
+  }
+  .btn-add:hover { border-color: var(--muted); }
+  .btn-primary {
+    background: var(--accent);
+    color: #0d0d0d;
+    font-weight: 700;
+    width: 100%;
+    padding: 12px;
+  }
+  .btn-primary:hover { background: var(--accent2); }
+  .btn-primary:disabled { opacity: .35; cursor: not-allowed; transform: none; }
+  .btn-copy {
+    background: var(--surface2);
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    width: 100%;
+    padding: 12px;
+    margin-top: 1.25rem;
+    font-size: 0.85rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .btn-copy:hover { background: rgba(200,241,53,.08); }
+
+  /* Player chips */
+  .chips {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    min-height: 36px; margin-bottom: 12px;
+  }
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 99px;
+    padding: 4px 10px 4px 12px;
+    font-size: 0.78rem;
+    color: var(--text);
+    animation: popIn .15s ease;
+  }
+  @keyframes popIn { from { transform: scale(.7); opacity:0; } to { transform:scale(1); opacity:1; } }
+  .chip-remove {
+    background: none; border: none; cursor: pointer;
+    color: var(--muted); font-size: 1rem; line-height:1;
+    padding: 0; transition: color .1s;
+  }
+  .chip-remove:hover { color: var(--danger); }
+
+  /* Info bar */
+  .info-bar {
+    display: flex; gap: 12px; align-items: center;
+    font-size: 0.72rem; color: var(--muted);
+    margin-bottom: 12px;
+  }
+  .info-bar .count {
+    color: var(--accent); font-weight: 500;
+  }
+  .info-bar .warn { color: var(--danger); }
+
+  /* Divider */
+  .divider {
+    border: none; border-top: 1px solid var(--border);
+    margin: 1.25rem 0;
+  }
+
+  /* Fixtures area */
+  .fixtures-scroll {
+    display: flex; flex-direction: column; gap: 1rem;
+  }
+
+  .round-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    animation: slideIn .2s ease;
+  }
+  @keyframes slideIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+
+  .round-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 14px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+  }
+  .round-label {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted2);
+  }
+  .round-done {
+    font-size: 0.65rem;
+    color: var(--accent);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .match {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .match:last-child { border-bottom: none; }
+
+  .match-teams {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .team {
+    flex: 1;
+    font-size: 0.8rem;
+    line-height: 1.5;
+  }
+  .team.right { text-align: right; }
+  .team-player {
+    display: block;
+    color: var(--text);
+    transition: color .15s;
+  }
+  .team-player.winner { color: var(--accent); font-weight: 500; }
+  .vs-sep {
+    font-size: 0.65rem;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+    flex-shrink: 0;
+  }
+
+  .score-row {
+    display: flex; align-items: center; gap: 8px;
+    justify-content: center;
+  }
+  .score-block {
+    display: flex; align-items: center; gap: 0;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .score-btn {
+    background: none; border: none; cursor: pointer;
+    color: var(--muted2); font-size: 1.1rem;
+    width: 34px; height: 34px;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .1s, color .1s;
+    font-family: monospace;
+    flex-shrink: 0;
+  }
+  .score-btn:hover { background: var(--border); color: var(--text); }
+  .score-btn:active { background: var(--border2); }
+  .score-val {
+    width: 38px; text-align: center;
+    font-size: 1rem; font-weight: 500;
+    color: var(--text);
+    font-family: 'Unbounded', sans-serif;
+    border-left: 1px solid var(--border); border-right: 1px solid var(--border);
+  }
+  .score-sep {
+    font-size: 0.7rem; color: var(--muted); padding: 0 4px;
+  }
+  .score-lock {
+    font-size: 0.72rem; color: var(--muted);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .score-lock .score-display {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 0.95rem;
+    color: var(--text);
+    letter-spacing: 0.04em;
+  }
+  .score-lock .score-display .s-win { color: var(--accent); }
+
+  .btn-lock {
+    background: var(--accent);
+    color: #0d0d0d;
+    border: none;
+    border-radius: 4px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 5px 10px;
+    cursor: pointer;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    flex-shrink: 0;
+    transition: background .1s;
+  }
+  .btn-lock:hover { background: var(--accent2); }
+  .btn-unlock {
+    background: none;
+    border: 1px solid var(--border2);
+    border-radius: 4px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--muted);
+    padding: 4px 8px;
+    cursor: pointer;
+    letter-spacing: 0.04em;
+  }
+  .btn-unlock:hover { border-color: var(--muted); color: var(--text); }
+
+  /* Points table */
+  .points-section { margin-top: 1.25rem; }
+  .points-title {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted2);
+    margin-bottom: 10px;
+  }
+  .points-table {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .points-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    transition: background .1s;
+  }
+  .points-row:last-child { border-bottom: none; }
+  .points-row.top { background: rgba(200,241,53,.05); }
+  .rank-num {
+    font-size: 0.7rem; color: var(--muted);
+    width: 20px; flex-shrink: 0;
+  }
+  .rank-num.gold { color: var(--accent); font-weight: 500; }
+  .points-name { font-size: 0.85rem; color: var(--text); flex: 1; padding-left: 8px; }
+  .points-val {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 0.85rem;
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: var(--muted);
+    font-size: 0.8rem;
+    line-height: 1.8;
+  }
+  .empty-state .big { font-size: 2rem; display: block; margin-bottom: .5rem; }
+
+  .copied-toast {
+    position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%);
+    background: var(--accent); color: #0d0d0d;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.78rem; font-weight: 700;
+    padding: 8px 20px; border-radius: 99px;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    opacity: 0; transition: opacity .2s;
+    pointer-events: none; z-index: 999;
+  }
+  .copied-toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">AMERICANO<span>/badminton</span></div>
+  <div class="tagline">Doubles · Rotating pairs · Individual scoring</div>
+</div>
+
+<div class="main">
+
+  <!-- Player input -->
+  <div class="input-section">
+    <div class="input-row">
+      <input type="text" id="nameInput" placeholder="Enter player name…" maxlength="24" />
+      <button class="btn btn-add" onclick="addPlayer()">+ Add</button>
+    </div>
+    <div class="chips" id="chips"></div>
+    <div class="info-bar" id="infoBar"></div>
+    <button class="btn btn-primary" id="generateBtn" onclick="generate()" disabled>
+      Generate fixtures
+    </button>
+  </div>
+
+  <hr class="divider" id="divider" style="display:none">
+
+  <!-- Fixtures -->
+  <div class="fixtures-scroll" id="fixturesArea"></div>
+
+  <!-- Points table -->
+  <div class="points-section" id="pointsSection" style="display:none">
+    <div class="points-title">Points table</div>
+    <div class="points-table" id="pointsTable"></div>
+    <button class="btn btn-copy" id="copyBtn" onclick="copyTable()">Copy points table</button>
+  </div>
+
+</div>
+
+<div class="copied-toast" id="toast">Copied!</div>
+
+<script>
+const MAX_ROUNDS = 11;
+
+let players = [];
+let tournament = null;
+
+const nameInput = document.getElementById('nameInput');
+nameInput.addEventListener('keydown', e => { if (e.key === 'Enter') addPlayer(); });
+
+function addPlayer() {
+  const name = nameInput.value.trim();
+  if (!name) return;
+  if (players.find(p => p.toLowerCase() === name.toLowerCase())) {
+    flash('Already added!'); return;
+  }
+  players.push(name);
+  nameInput.value = '';
+  nameInput.focus();
+  renderChips();
+  updateBtn();
+}
+
+function removePlayer(name) {
+  if (tournament) return;
+  players = players.filter(p => p !== name);
+  renderChips();
+  updateBtn();
+}
+
+function renderChips() {
+  const el = document.getElementById('chips');
+  el.innerHTML = players.map(p =>
+    `<span class="chip">${p}<button class="chip-remove" onclick="removePlayer('${p}')" title="Remove">×</button></span>`
+  ).join('');
+}
+
+function updateBtn() {
+  const btn = document.getElementById('generateBtn');
+  const bar = document.getElementById('infoBar');
+  const n = players.length;
+  const valid = n >= 4 && n % 2 === 0;
+  btn.disabled = !valid || !!tournament;
+
+  if (n === 0) { bar.innerHTML = ''; return; }
+  const rounds = Math.min(n - 1, MAX_ROUNDS);
+  let msg = `<span class="count">${n} players</span> · ${rounds} rounds`;
+  if (n < 4) msg += ` · <span class="warn">need at least 4</span>`;
+  else if (n % 2 !== 0) msg += ` · <span class="warn">need even number</span>`;
+  bar.innerHTML = msg;
+}
+
+// ── Circle-method schedule ──────────────────────────────────────────────────
+function circleSchedule(n) {
+  const indices = Array.from({length: n}, (_, i) => i);
+  const numRounds = Math.min(n - 1, MAX_ROUNDS);
+  const schedule = [];
+  let rot = indices.slice(1);
+
+  for (let r = 0; r < numRounds; r++) {
+    const circle = [indices[0], ...rot];
+    const roundPairs = [];
+    for (let i = 0; i < n / 2; i++) {
+      roundPairs.push([circle[i], circle[n - 1 - i]]);
+    }
+    schedule.push(roundPairs);
+    rot = [rot[rot.length - 1], ...rot.slice(0, rot.length - 1)];
+  }
+  return schedule;
+}
+
+function generate() {
+  if (players.length < 4 || players.length % 2 !== 0) return;
+
+  const n = players.length;
+  const schedule = circleSchedule(n);
+
+  // Build rounds: each round has n/2 pairs → n/4 matches (pair i vs pair i+1)
+  const rounds = schedule.map((roundPairs, ri) => {
+    const pairs = roundPairs.map(([a, b]) => [players[a], players[b]]);
+    const matches = [];
+    for (let i = 0; i + 1 < pairs.length; i += 2) {
+      matches.push({
+        pair1: pairs[i],
+        pair2: pairs[i + 1],
+        score1: 0,
+        score2: 0,
+        locked: false,
+      });
+    }
+    return { roundNum: ri + 1, matches };
+  });
+
+  tournament = { players: [...players], rounds };
+
+  // Lock input
+  document.getElementById('generateBtn').disabled = true;
+  document.querySelectorAll('.chip-remove').forEach(b => b.style.display = 'none');
+  document.getElementById('divider').style.display = '';
+  nameInput.disabled = true;
+  document.querySelector('.btn-add').disabled = true;
+
+  renderFixtures();
+}
+
+// ── Rendering ────────────────────────────────────────────────────────────────
+function renderFixtures() {
+  const area = document.getElementById('fixturesArea');
+  if (!tournament) { area.innerHTML = ''; return; }
+
+  area.innerHTML = tournament.rounds.map((rd, ri) => {
+    const allLocked = rd.matches.length > 0 && rd.matches.every(m => m.locked);
+    return `
+    <div class="round-block" id="round-${ri}">
+      <div class="round-header">
+        <span class="round-label">Round ${rd.roundNum}</span>
+        ${allLocked ? '<span class="round-done">✓ done</span>' : ''}
+      </div>
+      ${rd.matches.map((m, mi) => renderMatch(ri, mi, m)).join('')}
+    </div>`;
+  }).join('');
+
+  updatePointsTable();
+}
+
+function renderMatch(ri, mi, m) {
+  const w1 = m.locked && m.score1 > m.score2;
+  const w2 = m.locked && m.score2 > m.score1;
+
+  const teamLeft = `
+    <div class="team">
+      <span class="team-player ${w1?'winner':''}">${m.pair1[0]}</span>
+      <span class="team-player ${w1?'winner':''}">${m.pair1[1]}</span>
+    </div>`;
+  const teamRight = `
+    <div class="team right">
+      <span class="team-player ${w2?'winner':''}">${m.pair2[0]}</span>
+      <span class="team-player ${w2?'winner':''}">${m.pair2[1]}</span>
+    </div>`;
+
+  let scoreHtml;
+  if (m.locked) {
+    scoreHtml = `
+      <div class="score-row">
+        <div class="score-lock">
+          <span class="score-display">
+            <span class="${w1?'s-win':''}">${m.score1}</span>
+            <span style="color:var(--muted);font-size:.7rem"> – </span>
+            <span class="${w2?'s-win':''}">${m.score2}</span>
+          </span>
+          <button class="btn-unlock" onclick="unlock(${ri},${mi})">edit</button>
+        </div>
+      </div>`;
+  } else {
+    scoreHtml = `
+      <div class="score-row">
+        <div class="score-block">
+          <button class="score-btn" onclick="adj(${ri},${mi},1,-1)">−</button>
+          <div class="score-val" id="s1-${ri}-${mi}">${m.score1}</div>
+          <button class="score-btn" onclick="adj(${ri},${mi},1,1)">+</button>
+        </div>
+        <span class="score-sep">vs</span>
+        <div class="score-block">
+          <button class="score-btn" onclick="adj(${ri},${mi},2,-1)">−</button>
+          <div class="score-val" id="s2-${ri}-${mi}">${m.score2}</div>
+          <button class="score-btn" onclick="adj(${ri},${mi},2,1)">+</button>
+        </div>
+        <button class="btn-lock" onclick="lock(${ri},${mi})">Save</button>
+      </div>`;
+  }
+
+  return `
+    <div class="match" id="match-${ri}-${mi}">
+      <div class="match-teams">
+        ${teamLeft}
+        <span class="vs-sep">vs</span>
+        ${teamRight}
+      </div>
+      ${scoreHtml}
+    </div>`;
+}
+
+function adj(ri, mi, side, delta) {
+  const m = tournament.rounds[ri].matches[mi];
+  if (side === 1) m.score1 = Math.max(0, m.score1 + delta);
+  else m.score2 = Math.max(0, m.score2 + delta);
+
+  const el = document.getElementById(side === 1 ? `s1-${ri}-${mi}` : `s2-${ri}-${mi}`);
+  if (el) el.textContent = side === 1 ? m.score1 : m.score2;
+}
+
+function lock(ri, mi) {
+  tournament.rounds[ri].matches[mi].locked = true;
+  patchMatch(ri, mi);
+  patchRoundHeader(ri);
+  updatePointsTable();
+}
+
+function unlock(ri, mi) {
+  tournament.rounds[ri].matches[mi].locked = false;
+  patchMatch(ri, mi);
+  patchRoundHeader(ri);
+  updatePointsTable();
+}
+
+function patchMatch(ri, mi) {
+  const m = tournament.rounds[ri].matches[mi];
+  const el = document.getElementById(`match-${ri}-${mi}`);
+  if (el) el.outerHTML = `<div class="match" id="match-${ri}-${mi}">${renderMatch(ri,mi,m).replace(/^<div class="match"[^>]*>/,'').replace(/<\/div>$/, '')}</div>`;
+  const fresh = document.getElementById(`match-${ri}-${mi}`);
+  if (fresh) fresh.outerHTML = renderMatch(ri, mi, m).replace('id="match-', 'id="match-');
+  document.getElementById(`match-${ri}-${mi}`) || rerenderMatch(ri, mi);
+}
+
+function rerenderMatch(ri, mi) {
+  const m = tournament.rounds[ri].matches[mi];
+  const container = document.querySelector(`#round-${ri} .match:nth-child(${mi + 2})`);
+  if (container) container.outerHTML = renderMatch(ri, mi, m);
+}
+
+function patchRoundHeader(ri) {
+  const rd = tournament.rounds[ri];
+  const allLocked = rd.matches.length > 0 && rd.matches.every(m => m.locked);
+  const hdr = document.querySelector(`#round-${ri} .round-header`);
+  if (hdr) {
+    hdr.innerHTML = `
+      <span class="round-label">Round ${rd.roundNum}</span>
+      ${allLocked ? '<span class="round-done">✓ done</span>' : ''}`;
+  }
+}
+
+// ── Points table ──────────────────────────────────────────────────────────────
+function computePoints() {
+  const pts = {};
+  tournament.players.forEach(p => { pts[p] = 0; });
+
+  tournament.rounds.forEach(rd => {
+    rd.matches.forEach(m => {
+      if (!m.locked) return;
+      m.pair1.forEach(p => { pts[p] = (pts[p] || 0) + m.score1; });
+      m.pair2.forEach(p => { pts[p] = (pts[p] || 0) + m.score2; });
+    });
+  });
+
+  return Object.entries(pts)
+    .map(([name, p]) => ({ name, pts: p }))
+    .sort((a, b) => b.pts - a.pts);
+}
+
+function allDone() {
+  if (!tournament) return false;
+  return tournament.rounds.every(rd => rd.matches.every(m => m.locked));
+}
+
+function updatePointsTable() {
+  const section = document.getElementById('pointsSection');
+  const table = document.getElementById('pointsTable');
+  const copyBtn = document.getElementById('copyBtn');
+
+  const standings = computePoints();
+  const hasAny = standings.some(s => s.pts > 0);
+
+  if (!hasAny) { section.style.display = 'none'; return; }
+  section.style.display = '';
+
+  table.innerHTML = standings.map((s, i) => `
+    <div class="points-row ${i === 0 ? 'top' : ''}">
+      <span class="rank-num ${i === 0 ? 'gold' : ''}">${i + 1}</span>
+      <span class="points-name">${s.name}</span>
+      <span class="points-val">${s.pts}</span>
+    </div>`).join('');
+
+  copyBtn.style.display = allDone() ? '' : 'none';
+}
+
+function copyTable() {
+  const standings = computePoints();
+  const text = standings.map(s => `${s.name} - ${s.pts} points`).join('\n');
+  navigator.clipboard.writeText(text).then(() => showToast()).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta);
+    ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta); showToast();
+  });
+}
+
+function showToast() {
+  const t = document.getElementById('toast');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+function flash(msg) {
+  const bar = document.getElementById('infoBar');
+  const prev = bar.innerHTML;
+  bar.innerHTML = `<span class="warn">${msg}</span>`;
+  setTimeout(() => { bar.innerHTML = prev; }, 1500);
+}
+
+// Full re-render on lock/unlock instead of partial patch
+function lock(ri, mi) {
+  tournament.rounds[ri].matches[mi].locked = true;
+  renderFixtures();
+}
+function unlock(ri, mi) {
+  tournament.rounds[ri].matches[mi].locked = false;
+  renderFixtures();
+}
+</script>
+</body>
+</html>
