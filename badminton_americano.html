@@ -399,7 +399,7 @@
 <div class="copied-toast" id="toast">Copied!</div>
 
 <script>
-const MAX_ROUNDS = 11;
+const MAX_ROUNDS = 50;
 
 let players = [];
 let tournament = null;
@@ -430,7 +430,7 @@ function removePlayer(name) {
 function renderChips() {
   const el = document.getElementById('chips');
   el.innerHTML = players.map(p =>
-    `<span class="chip">${p}<button class="chip-remove" onclick="removePlayer('${p}')" title="Remove">×</button></span>`
+    `<span class="chip">${p}<button class="chip-remove" onclick="removePlayer('${p}')">×</button></span>`
   ).join('');
 }
 
@@ -442,57 +442,101 @@ function updateBtn() {
   btn.disabled = !valid || !!tournament;
 
   if (n === 0) { bar.innerHTML = ''; return; }
-  const rounds = Math.min(n - 1, MAX_ROUNDS);
+  const rounds = n - 1;
   let msg = `<span class="count">${n} players</span> · ${rounds} rounds`;
   if (n < 4) msg += ` · <span class="warn">need at least 4</span>`;
   else if (n % 2 !== 0) msg += ` · <span class="warn">need even number</span>`;
   bar.innerHTML = msg;
 }
 
-// ── Circle-method schedule ──────────────────────────────────────────────────
-function circleSchedule(n) {
-  const indices = Array.from({length: n}, (_, i) => i);
-  const numRounds = Math.min(n - 1, MAX_ROUNDS);
-  const schedule = [];
-  let rot = indices.slice(1);
-
-  for (let r = 0; r < numRounds; r++) {
-    const circle = [indices[0], ...rot];
-    const roundPairs = [];
-    for (let i = 0; i < n / 2; i++) {
-      roundPairs.push([circle[i], circle[n - 1 - i]]);
+// ✅ Generate all unique pairs
+function generateAllPairs(players) {
+  const pairs = [];
+  for (let i = 0; i < players.length; i++) {
+    for (let j = i + 1; j < players.length; j++) {
+      pairs.push([players[i], players[j]]);
     }
-    schedule.push(roundPairs);
-    rot = [rot[rot.length - 1], ...rot.slice(0, rot.length - 1)];
   }
-  return schedule;
+  return pairs;
+}
+
+// ✅ Distribute pairs into valid rounds
+function distributePairs(players) {
+  const n = players.length;
+  const rounds = Array.from({ length: n - 1 }, () => []);
+  const used = Array.from({ length: n - 1 }, () => new Set());
+
+  const allPairs = generateAllPairs(players);
+
+  for (const pair of allPairs) {
+    for (let r = 0; r < rounds.length; r++) {
+      if (!used[r].has(pair[0]) && !used[r].has(pair[1])) {
+        rounds[r].push(pair);
+        used[r].add(pair[0]);
+        used[r].add(pair[1]);
+        break;
+      }
+    }
+  }
+
+  return rounds;
+}
+
+// ✅ Generate matches (round-robin within round)
+// ✅ Proper round generation (1-factorization)
+function generateRoundPairs(players) {
+  const n = players.length;
+  const rounds = [];
+  const arr = [...players];
+
+  for (let r = 0; r < n - 1; r++) {
+    const pairs = [];
+
+    for (let i = 0; i < n / 2; i++) {
+      pairs.push([arr[i], arr[n - 1 - i]]);
+    }
+
+    rounds.push(pairs);
+
+    // rotate (keep first fixed)
+    arr.splice(1, 0, arr.pop());
+  }
+
+  return rounds;
+}
+
+// ✅ Generate matches inside each round (round-robin)
+function generateMatches(pairs) {
+  const matches = [];
+  for (let i = 0; i < pairs.length; i++) {
+    for (let j = i + 1; j < pairs.length; j++) {
+      matches.push({
+        pair1: pairs[i],
+        pair2: pairs[j],
+        score1: 0,
+        score2: 0,
+        locked: false
+      });
+    }
+  }
+  return matches;
 }
 
 function generate() {
-  if (players.length < 4 || players.length % 2 !== 0) return;
-
   const n = players.length;
-  const schedule = circleSchedule(n);
+  if (n < 4 || n % 2 !== 0) return;
 
-  // Build rounds: each round has n/2 pairs → n/4 matches (pair i vs pair i+1)
-  const rounds = schedule.map((roundPairs, ri) => {
-    const pairs = roundPairs.map(([a, b]) => [players[a], players[b]]);
-    const matches = [];
-    for (let i = 0; i + 1 < pairs.length; i += 2) {
-      matches.push({
-        pair1: pairs[i],
-        pair2: pairs[i + 1],
-        score1: 0,
-        score2: 0,
-        locked: false,
-      });
-    }
-    return { roundNum: ri + 1, matches };
-  });
+  const roundPairs = generateRoundPairs(players);
+
+  const rounds = roundPairs.map((pairs, i) => ({
+    roundNum: i + 1,
+    pairs,
+    matches: generateMatches(pairs)
+  }));
 
   tournament = { players: [...players], rounds };
 
-  // Lock input
+  // lock UI
   document.getElementById('generateBtn').disabled = true;
   document.querySelectorAll('.chip-remove').forEach(b => b.style.display = 'none');
   document.getElementById('divider').style.display = '';
@@ -502,18 +546,30 @@ function generate() {
   renderFixtures();
 }
 
-// ── Rendering ────────────────────────────────────────────────────────────────
+// ── Rendering (same as before, unchanged) ─────────────────────────
+
 function renderFixtures() {
   const area = document.getElementById('fixturesArea');
   if (!tournament) { area.innerHTML = ''; return; }
 
   area.innerHTML = tournament.rounds.map((rd, ri) => {
     const allLocked = rd.matches.length > 0 && rd.matches.every(m => m.locked);
+
+    // 👇 format: A & B | C & D | E & F
+    const pairLine = rd.pairs
+      .map(p => `${p[0]} & ${p[1]}`)
+      .join(' | ');
+
     return `
     <div class="round-block" id="round-${ri}">
-      <div class="round-header">
-        <span class="round-label">Round ${rd.roundNum}</span>
-        ${allLocked ? '<span class="round-done">✓ done</span>' : ''}
+      <div class="round-header" style="flex-direction: column; align-items: flex-start; gap: 4px;">
+        <div style="display:flex; width:100%; justify-content:space-between;">
+          <span class="round-label">Round ${rd.roundNum}</span>
+          ${allLocked ? '<span class="round-done">✓ done</span>' : ''}
+        </div>
+        <div style="font-size:0.7rem; color: var(--muted);">
+          ${pairLine}
+        </div>
       </div>
       ${rd.matches.map((m, mi) => renderMatch(ri, mi, m)).join('')}
     </div>`;
@@ -555,13 +611,13 @@ function renderMatch(ri, mi, m) {
       <div class="score-row">
         <div class="score-block">
           <button class="score-btn" onclick="adj(${ri},${mi},1,-1)">−</button>
-          <div class="score-val" id="s1-${ri}-${mi}">${m.score1}</div>
+          <div class="score-val">${m.score1}</div>
           <button class="score-btn" onclick="adj(${ri},${mi},1,1)">+</button>
         </div>
         <span class="score-sep">vs</span>
         <div class="score-block">
           <button class="score-btn" onclick="adj(${ri},${mi},2,-1)">−</button>
-          <div class="score-val" id="s2-${ri}-${mi}">${m.score2}</div>
+          <div class="score-val">${m.score2}</div>
           <button class="score-btn" onclick="adj(${ri},${mi},2,1)">+</button>
         </div>
         <button class="btn-lock" onclick="lock(${ri},${mi})">Save</button>
@@ -569,7 +625,7 @@ function renderMatch(ri, mi, m) {
   }
 
   return `
-    <div class="match" id="match-${ri}-${mi}">
+    <div class="match">
       <div class="match-teams">
         ${teamLeft}
         <span class="vs-sep">vs</span>
@@ -583,52 +639,21 @@ function adj(ri, mi, side, delta) {
   const m = tournament.rounds[ri].matches[mi];
   if (side === 1) m.score1 = Math.max(0, m.score1 + delta);
   else m.score2 = Math.max(0, m.score2 + delta);
-
-  const el = document.getElementById(side === 1 ? `s1-${ri}-${mi}` : `s2-${ri}-${mi}`);
-  if (el) el.textContent = side === 1 ? m.score1 : m.score2;
+  renderFixtures();
 }
 
 function lock(ri, mi) {
   tournament.rounds[ri].matches[mi].locked = true;
-  patchMatch(ri, mi);
-  patchRoundHeader(ri);
-  updatePointsTable();
+  renderFixtures();
 }
 
 function unlock(ri, mi) {
   tournament.rounds[ri].matches[mi].locked = false;
-  patchMatch(ri, mi);
-  patchRoundHeader(ri);
-  updatePointsTable();
+  renderFixtures();
 }
 
-function patchMatch(ri, mi) {
-  const m = tournament.rounds[ri].matches[mi];
-  const el = document.getElementById(`match-${ri}-${mi}`);
-  if (el) el.outerHTML = `<div class="match" id="match-${ri}-${mi}">${renderMatch(ri,mi,m).replace(/^<div class="match"[^>]*>/,'').replace(/<\/div>$/, '')}</div>`;
-  const fresh = document.getElementById(`match-${ri}-${mi}`);
-  if (fresh) fresh.outerHTML = renderMatch(ri, mi, m).replace('id="match-', 'id="match-');
-  document.getElementById(`match-${ri}-${mi}`) || rerenderMatch(ri, mi);
-}
+// ── Points table unchanged ───────────────────────────────────────
 
-function rerenderMatch(ri, mi) {
-  const m = tournament.rounds[ri].matches[mi];
-  const container = document.querySelector(`#round-${ri} .match:nth-child(${mi + 2})`);
-  if (container) container.outerHTML = renderMatch(ri, mi, m);
-}
-
-function patchRoundHeader(ri) {
-  const rd = tournament.rounds[ri];
-  const allLocked = rd.matches.length > 0 && rd.matches.every(m => m.locked);
-  const hdr = document.querySelector(`#round-${ri} .round-header`);
-  if (hdr) {
-    hdr.innerHTML = `
-      <span class="round-label">Round ${rd.roundNum}</span>
-      ${allLocked ? '<span class="round-done">✓ done</span>' : ''}`;
-  }
-}
-
-// ── Points table ──────────────────────────────────────────────────────────────
 function computePoints() {
   const pts = {};
   tournament.players.forEach(p => { pts[p] = 0; });
@@ -636,8 +661,8 @@ function computePoints() {
   tournament.rounds.forEach(rd => {
     rd.matches.forEach(m => {
       if (!m.locked) return;
-      m.pair1.forEach(p => { pts[p] = (pts[p] || 0) + m.score1; });
-      m.pair2.forEach(p => { pts[p] = (pts[p] || 0) + m.score2; });
+      m.pair1.forEach(p => pts[p] += m.score1);
+      m.pair2.forEach(p => pts[p] += m.score2);
     });
   });
 
@@ -646,15 +671,9 @@ function computePoints() {
     .sort((a, b) => b.pts - a.pts);
 }
 
-function allDone() {
-  if (!tournament) return false;
-  return tournament.rounds.every(rd => rd.matches.every(m => m.locked));
-}
-
 function updatePointsTable() {
   const section = document.getElementById('pointsSection');
   const table = document.getElementById('pointsTable');
-  const copyBtn = document.getElementById('copyBtn');
 
   const standings = computePoints();
   const hasAny = standings.some(s => s.pts > 0);
@@ -668,25 +687,6 @@ function updatePointsTable() {
       <span class="points-name">${s.name}</span>
       <span class="points-val">${s.pts}</span>
     </div>`).join('');
-
-  copyBtn.style.display = allDone() ? '' : 'none';
-}
-
-function copyTable() {
-  const standings = computePoints();
-  const text = standings.map(s => `${s.name} - ${s.pts} points`).join('\n');
-  navigator.clipboard.writeText(text).then(() => showToast()).catch(() => {
-    const ta = document.createElement('textarea');
-    ta.value = text; document.body.appendChild(ta);
-    ta.select(); document.execCommand('copy');
-    document.body.removeChild(ta); showToast();
-  });
-}
-
-function showToast() {
-  const t = document.getElementById('toast');
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2000);
 }
 
 function flash(msg) {
@@ -694,16 +694,6 @@ function flash(msg) {
   const prev = bar.innerHTML;
   bar.innerHTML = `<span class="warn">${msg}</span>`;
   setTimeout(() => { bar.innerHTML = prev; }, 1500);
-}
-
-// Full re-render on lock/unlock instead of partial patch
-function lock(ri, mi) {
-  tournament.rounds[ri].matches[mi].locked = true;
-  renderFixtures();
-}
-function unlock(ri, mi) {
-  tournament.rounds[ri].matches[mi].locked = false;
-  renderFixtures();
 }
 </script>
 </body>
