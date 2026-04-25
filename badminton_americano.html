@@ -19,6 +19,7 @@
     --muted2: #888;
     --danger: #ff5c5c;
     --win: #c8f135;
+    --bye: #f5a623;
   }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html { font-size: 14px; }
@@ -32,7 +33,6 @@
     align-items: center;
   }
 
-  /* Header */
   .header {
     width: 100%; max-width: 560px;
     padding: 2rem 1.25rem 0;
@@ -53,18 +53,14 @@
     text-transform: uppercase;
   }
 
-  /* Main */
   .main {
     width: 100%; max-width: 560px;
     padding: 1.5rem 1.25rem 4rem;
     flex: 1;
   }
 
-  /* Input area */
   .input-section { margin-bottom: 1.5rem; }
-  .input-row {
-    display: flex; gap: 8px; margin-bottom: 10px;
-  }
+  .input-row { display: flex; gap: 8px; margin-bottom: 10px; }
   input[type=text] {
     flex: 1;
     background: var(--surface);
@@ -121,7 +117,6 @@
   }
   .btn-copy:hover { background: rgba(200,241,53,.08); }
 
-  /* Player chips */
   .chips {
     display: flex; flex-wrap: wrap; gap: 6px;
     min-height: 36px; margin-bottom: 12px;
@@ -144,27 +139,18 @@
   }
   .chip-remove:hover { color: var(--danger); }
 
-  /* Info bar */
   .info-bar {
     display: flex; gap: 12px; align-items: center;
     font-size: 0.72rem; color: var(--muted);
     margin-bottom: 12px;
   }
-  .info-bar .count {
-    color: var(--accent); font-weight: 500;
-  }
+  .info-bar .count { color: var(--accent); font-weight: 500; }
   .info-bar .warn { color: var(--danger); }
+  .info-bar .bye-note { color: var(--bye); }
 
-  /* Divider */
-  .divider {
-    border: none; border-top: 1px solid var(--border);
-    margin: 1.25rem 0;
-  }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 1.25rem 0; }
 
-  /* Fixtures area */
-  .fixtures-scroll {
-    display: flex; flex-direction: column; gap: 1rem;
-  }
+  .fixtures-scroll { display: flex; flex-direction: column; gap: 1rem; }
 
   .round-block {
     background: var(--surface);
@@ -205,27 +191,22 @@
   }
   .match:last-child { border-bottom: none; }
 
-  .match-teams {
-    display: flex; align-items: center; gap: 8px;
+  /* BYE match highlight */
+  .match.is-bye-match {
+    border-left: 2px solid var(--bye);
+    background: rgba(245, 166, 35, 0.04);
   }
-  .team {
-    flex: 1;
-    font-size: 0.8rem;
-    line-height: 1.5;
-  }
+
+  .match-teams { display: flex; align-items: center; gap: 8px; }
+  .team { flex: 1; font-size: 0.8rem; line-height: 1.5; }
   .team.right { text-align: right; }
-  .team-player {
-    display: block;
-    color: var(--text);
-    transition: color .15s;
-  }
+  .team-player { display: block; color: var(--text); transition: color .15s; }
   .team-player.winner { color: var(--accent); font-weight: 500; }
-  .vs-sep {
-    font-size: 0.65rem;
-    color: var(--muted);
-    letter-spacing: 0.06em;
-    flex-shrink: 0;
-  }
+  /* BYE volunteer label */
+  .team-player.bye-volunteer { color: var(--bye); }
+  .team-player.bye-volunteer.winner { color: var(--accent); }
+
+  .vs-sep { font-size: 0.65rem; color: var(--muted); letter-spacing: 0.06em; flex-shrink: 0; }
 
   .score-row {
     display: flex; align-items: center; gap: 8px;
@@ -256,9 +237,7 @@
     font-family: 'Unbounded', sans-serif;
     border-left: 1px solid var(--border); border-right: 1px solid var(--border);
   }
-  .score-sep {
-    font-size: 0.7rem; color: var(--muted); padding: 0 4px;
-  }
+  .score-sep { font-size: 0.7rem; color: var(--muted); padding: 0 4px; }
   .score-lock {
     font-size: 0.72rem; color: var(--muted);
     display: flex; align-items: center; gap: 6px;
@@ -300,7 +279,6 @@
   }
   .btn-unlock:hover { border-color: var(--muted); color: var(--text); }
 
-  /* Points table */
   .points-section { margin-top: 1.25rem; }
   .points-title {
     font-family: 'Unbounded', sans-serif;
@@ -325,10 +303,7 @@
   }
   .points-row:last-child { border-bottom: none; }
   .points-row.top { background: rgba(200,241,53,.05); }
-  .rank-num {
-    font-size: 0.7rem; color: var(--muted);
-    width: 20px; flex-shrink: 0;
-  }
+  .rank-num { font-size: 0.7rem; color: var(--muted); width: 20px; flex-shrink: 0; }
   .rank-num.gold { color: var(--accent); font-weight: 500; }
   .points-name { font-size: 0.85rem; color: var(--text); flex: 1; padding-left: 8px; }
   .points-val {
@@ -337,15 +312,6 @@
     color: var(--accent);
     font-weight: 700;
   }
-
-  .empty-state {
-    text-align: center;
-    padding: 2rem 1rem;
-    color: var(--muted);
-    font-size: 0.8rem;
-    line-height: 1.8;
-  }
-  .empty-state .big { font-size: 2rem; display: block; margin-bottom: .5rem; }
 
   .copied-toast {
     position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%);
@@ -369,7 +335,6 @@
 
 <div class="main">
 
-  <!-- Player input -->
   <div class="input-section">
     <div class="input-row">
       <input type="text" id="nameInput" placeholder="Enter player name…" maxlength="24" />
@@ -384,10 +349,8 @@
 
   <hr class="divider" id="divider" style="display:none">
 
-  <!-- Fixtures -->
   <div class="fixtures-scroll" id="fixturesArea"></div>
 
-  <!-- Points table -->
   <div class="points-section" id="pointsSection" style="display:none">
     <div class="points-title">Points table</div>
     <div class="points-table" id="pointsTable"></div>
@@ -399,8 +362,6 @@
 <div class="copied-toast" id="toast">Copied!</div>
 
 <script>
-const MAX_ROUNDS = 50;
-
 let players = [];
 let tournament = null;
 
@@ -416,6 +377,12 @@ function copyTable() {
     ta.select(); document.execCommand('copy');
     document.body.removeChild(ta); showToast();
   });
+}
+
+function showToast() {
+  const t = document.getElementById('toast');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 1800);
 }
 
 function addPlayer() {
@@ -441,7 +408,7 @@ function removePlayer(name) {
 function renderChips() {
   const el = document.getElementById('chips');
   el.innerHTML = players.map(p =>
-    `<span class="chip">${p}<button class="chip-remove" onclick="removePlayer('${p}')">×</button></span>`
+    `<span class="chip">${p}<button class="chip-remove" onclick="removePlayer('${p.replace(/'/g,"\\'")}')">×</button></span>`
   ).join('');
 }
 
@@ -449,74 +416,39 @@ function updateBtn() {
   const btn = document.getElementById('generateBtn');
   const bar = document.getElementById('infoBar');
   const n = players.length;
-  const valid = n >= 4 && n % 2 === 0;
+  const isOdd = n % 2 !== 0;
+  // allow odd >= 5 (will auto-add BYE) or even >= 4
+  const valid = n >= 4;
   btn.disabled = !valid || !!tournament;
 
   if (n === 0) { bar.innerHTML = ''; return; }
-  const rounds = n - 1;
+  const effectiveN = isOdd ? n + 1 : n;
+  const rounds = effectiveN - 1;
   let msg = `<span class="count">${n} players</span> · ${rounds} rounds`;
   if (n < 4) msg += ` · <span class="warn">need at least 4</span>`;
-  else if (n % 2 !== 0) msg += ` · <span class="warn">need even number</span>`;
+  else if (isOdd) msg += ` · <span class="bye-note">BYE auto-added</span>`;
   bar.innerHTML = msg;
 }
 
-// ✅ Generate all unique pairs
-function generateAllPairs(players) {
-  const pairs = [];
-  for (let i = 0; i < players.length; i++) {
-    for (let j = i + 1; j < players.length; j++) {
-      pairs.push([players[i], players[j]]);
-    }
-  }
-  return pairs;
-}
+// ── Round generation (UNCHANGED from original) ────────────────────
 
-// ✅ Distribute pairs into valid rounds
-function distributePairs(players) {
-  const n = players.length;
-  const rounds = Array.from({ length: n - 1 }, () => []);
-  const used = Array.from({ length: n - 1 }, () => new Set());
-
-  const allPairs = generateAllPairs(players);
-
-  for (const pair of allPairs) {
-    for (let r = 0; r < rounds.length; r++) {
-      if (!used[r].has(pair[0]) && !used[r].has(pair[1])) {
-        rounds[r].push(pair);
-        used[r].add(pair[0]);
-        used[r].add(pair[1]);
-        break;
-      }
-    }
-  }
-
-  return rounds;
-}
-
-// ✅ Generate matches (round-robin within round)
-// ✅ Proper round generation (1-factorization)
-function generateRoundPairs(players) {
-  const n = players.length;
+function generateRoundPairs(playerList) {
+  const n = playerList.length; // guaranteed even
   const rounds = [];
-  const arr = [...players];
+  const arr = [...playerList];
 
   for (let r = 0; r < n - 1; r++) {
     const pairs = [];
-
     for (let i = 0; i < n / 2; i++) {
       pairs.push([arr[i], arr[n - 1 - i]]);
     }
-
     rounds.push(pairs);
-
     // rotate (keep first fixed)
     arr.splice(1, 0, arr.pop());
   }
-
   return rounds;
 }
 
-// ✅ Generate matches inside each round (round-robin)
 function generateMatches(pairs) {
   const matches = [];
   for (let i = 0; i < pairs.length; i++) {
@@ -533,11 +465,88 @@ function generateMatches(pairs) {
   return matches;
 }
 
+// ── BYE volunteer assignment ──────────────────────────────────────
+// Goal: every real player gets EXACTLY the same number of BYE duties.
+//
+// How it works:
+// 1. Collect all BYE matches with their eligible volunteers (players not
+//    in that match).
+// 2. Calculate the exact target: totalByeMatches / numPlayers. This is
+//    always a whole number because of how round-robin maths works.
+// 3. Use backtracking to find an assignment where every player ends up
+//    with exactly `target` BYE duties. Falls back to balanced-greedy
+//    if backtracking finds no perfect solution (shouldn't happen in
+//    standard configurations).
+
+function assignByeVolunteers(rounds, realPlayers) {
+  // Collect all BYE matches in order
+  const byeMatches = [];
+  rounds.forEach((rd) => {
+    rd.matches.forEach((m) => {
+      if (!m.pair1.includes('BYE') && !m.pair2.includes('BYE')) return;
+      const inMatch = [...m.pair1, ...m.pair2].filter(p => p !== 'BYE');
+      const eligible = realPlayers.filter(p => !inMatch.includes(p));
+      byeMatches.push({ m, eligible });
+    });
+  });
+
+  const total = byeMatches.length;
+  const n = realPlayers.length;
+  const target = total / n; // exact integer for valid configurations
+
+  const byeCount = {};
+  realPlayers.forEach(p => { byeCount[p] = 0; });
+  const assignment = new Array(total).fill(null);
+
+  // Backtracking solver
+  function solve(idx) {
+    if (idx === total) {
+      // Check every player has exactly `target` bye duties
+      return realPlayers.every(p => byeCount[p] === target);
+    }
+    const { eligible } = byeMatches[idx];
+    // Try eligible players in order of current count (fewest first) for speed
+    const sorted = [...eligible].sort((a, b) => byeCount[a] - byeCount[b]);
+    for (const p of sorted) {
+      if (byeCount[p] < target) {
+        byeCount[p]++;
+        assignment[idx] = p;
+        if (solve(idx + 1)) return true;
+        byeCount[p]--;
+        assignment[idx] = null;
+      }
+    }
+    return false;
+  }
+
+  const solved = solve(0);
+
+  if (!solved) {
+    // Fallback: greedy (keeps counts as balanced as possible)
+    realPlayers.forEach(p => { byeCount[p] = 0; });
+    byeMatches.forEach(({ eligible }, idx) => {
+      const sorted = [...eligible].sort((a, b) => byeCount[a] - byeCount[b]);
+      assignment[idx] = sorted[0];
+      byeCount[sorted[0]]++;
+    });
+  }
+
+  // Write volunteers back to match objects
+  byeMatches.forEach(({ m }, idx) => {
+    m.byeVolunteer = assignment[idx];
+  });
+}
+
+// ── Generate ──────────────────────────────────────────────────────
+
 function generate() {
   const n = players.length;
-  if (n < 4 || n % 2 !== 0) return;
+  if (n < 4) return;
 
-  const roundPairs = generateRoundPairs(players);
+  const isOdd = n % 2 !== 0;
+  const pool = isOdd ? [...players, 'BYE'] : [...players];
+
+  const roundPairs = generateRoundPairs(pool);
 
   const rounds = roundPairs.map((pairs, i) => ({
     roundNum: i + 1,
@@ -545,9 +554,12 @@ function generate() {
     matches: generateMatches(pairs)
   }));
 
-  tournament = { players: [...players], rounds };
+  if (isOdd) {
+    assignByeVolunteers(rounds, players);
+  }
 
-  // lock UI
+  tournament = { players: [...players], isOdd, rounds };
+
   document.getElementById('generateBtn').disabled = true;
   document.querySelectorAll('.chip-remove').forEach(b => b.style.display = 'none');
   document.getElementById('divider').style.display = '';
@@ -557,7 +569,7 @@ function generate() {
   renderFixtures();
 }
 
-// ── Rendering (same as before, unchanged) ─────────────────────────
+// ── Rendering ─────────────────────────────────────────────────────
 
 function renderFixtures() {
   const area = document.getElementById('fixturesArea');
@@ -566,9 +578,8 @@ function renderFixtures() {
   area.innerHTML = tournament.rounds.map((rd, ri) => {
     const allLocked = rd.matches.length > 0 && rd.matches.every(m => m.locked);
 
-    // 👇 format: A & B | C & D | E & F
     const pairLine = rd.pairs
-      .map(p => `${p[0]} & ${p[1]}`)
+      .map(p => p.map(name => name === 'BYE' ? '<span style="color:var(--bye)">BYE</span>' : name).join(' & '))
       .join(' | ');
 
     return `
@@ -590,18 +601,29 @@ function renderFixtures() {
 }
 
 function renderMatch(ri, mi, m) {
+  // Resolve display names: replace BYE with "Volunteer (BYE)"
+  const resolveNames = (pair) => pair.map(name => {
+    if (name === 'BYE' && m.byeVolunteer) return { display: `${m.byeVolunteer} (BYE)`, real: m.byeVolunteer, isBye: true };
+    return { display: name, real: name, isBye: false };
+  });
+
+  const p1 = resolveNames(m.pair1);
+  const p2 = resolveNames(m.pair2);
+
   const w1 = m.locked && m.score1 > m.score2;
   const w2 = m.locked && m.score2 > m.score1;
+  const isByeMatch = !!m.byeVolunteer;
+
+  const playerTag = (p, winner) =>
+    `<span class="team-player ${winner ? 'winner' : ''} ${p.isBye ? 'bye-volunteer' : ''}">${p.display}</span>`;
 
   const teamLeft = `
     <div class="team">
-      <span class="team-player ${w1?'winner':''}">${m.pair1[0]}</span>
-      <span class="team-player ${w1?'winner':''}">${m.pair1[1]}</span>
+      ${p1.map(p => playerTag(p, w1)).join('')}
     </div>`;
   const teamRight = `
     <div class="team right">
-      <span class="team-player ${w2?'winner':''}">${m.pair2[0]}</span>
-      <span class="team-player ${w2?'winner':''}">${m.pair2[1]}</span>
+      ${p2.map(p => playerTag(p, w2)).join('')}
     </div>`;
 
   let scoreHtml;
@@ -636,7 +658,7 @@ function renderMatch(ri, mi, m) {
   }
 
   return `
-    <div class="match">
+    <div class="match${isByeMatch ? ' is-bye-match' : ''}">
       <div class="match-teams">
         ${teamLeft}
         <span class="vs-sep">vs</span>
@@ -663,7 +685,11 @@ function unlock(ri, mi) {
   renderFixtures();
 }
 
-// ── Points table unchanged ───────────────────────────────────────
+// ── Points ────────────────────────────────────────────────────────
+// BYE volunteer's score is credited to the volunteer (their real name),
+// not to 'BYE'. Since we store byeVolunteer on the match and replace
+// 'BYE' with volunteer in pair1/pair2 for scoring purposes, we resolve
+// the real players per pair before accumulating.
 
 function computePoints() {
   const pts = {};
@@ -672,8 +698,13 @@ function computePoints() {
   tournament.rounds.forEach(rd => {
     rd.matches.forEach(m => {
       if (!m.locked) return;
-      m.pair1.forEach(p => pts[p] += m.score1);
-      m.pair2.forEach(p => pts[p] += m.score2);
+
+      // resolve real names (BYE → volunteer)
+      const real1 = m.pair1.map(n => (n === 'BYE' && m.byeVolunteer) ? m.byeVolunteer : n);
+      const real2 = m.pair2.map(n => (n === 'BYE' && m.byeVolunteer) ? m.byeVolunteer : n);
+
+      real1.forEach(p => { if (pts[p] !== undefined) pts[p] += m.score1; });
+      real2.forEach(p => { if (pts[p] !== undefined) pts[p] += m.score2; });
     });
   });
 
